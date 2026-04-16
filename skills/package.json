@@ -1,0 +1,52 @@
+{
+  "name": "@ai-hotspot-monitor/skills",
+  "version": "1.0.0",
+  "description": "AI热点监控工具的Agent Skills包，提供智能热点发现和监控功能，支持OpenRouter和DeepSeek AI",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "example": "node example.js"
+  },
+  "keywords": [
+    "ai",
+    "hotspot",
+    "monitor",
+    "content-analysis",
+    "notification",
+    "agent-skills",
+    "openrouter",
+    "deepseek"
+  ],
+  "author": "AI Hotspot Monitor Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/ai-hotspot-monitor-skills.git"
+  },
+  "skills": {
+    "hotspot-monitor": {
+      "name": "热点监控",
+      "description": "监控和发现科技热点内容",
+      "version": "1.0.0",
+      "capabilities": ["关键词监控", "内容采集", "热点发现"]
+    },
+    "content-analyzer": {
+      "name": "内容分析",
+      "description": "使用AI分析内容真实性",
+      "version": "1.0.0",
+      "capabilities": ["真实性验证", "置信度评分", "虚假内容识别"]
+    },
+    "notification-sender": {
+      "name": "通知发送",
+      "description": "发送各种类型的通知",
+      "version": "1.0.0",
+      "capabilities": ["邮件通知", "Web推送", "批量发送"]
+    }
+  }
+}

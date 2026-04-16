@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI热点监控 - 立即扫描全链路流程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .flow-container {
+            position: relative;
+        }
+
+        .flow-step {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .step-content {
+            margin-left: 25px;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+
+        .type-frontend { background: #e6f7ff; color: #1890ff; }
+        .type-backend { background: #f6ffed; color: #52c41a; }
+        .type-service { background: #fff7e6; color: #fa8c16; }
+        .type-ai { background: #fff0f6; color: #eb2f96; }
+        .type-db { background: #f9f0ff; color: #722ed1; }
+
+        .step-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #d4d4d4;
+            line-height: 1.5;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+        }
+
+        .file-path {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: white;
+            font-size: 2rem;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .service-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .service-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .api-endpoint {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            color: #856404;
+        }
+
+        .data-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e8;
+            border-radius: 6px;
+        }
+
+        .data-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .response-summary {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .response-summary h4 {
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+        }
+
+        .badge-success { background: #52c41a; color: white; }
+        .badge-processing { background: #1890ff; color: white; }
+        .badge-waiting { background: #fa8c16; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 AI热点监控 - 立即扫描全链路流程</h1>
+            <p>从用户点击到数据展示的完整技术旅程</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #1890ff;"></span>
+                <span>前端</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #52c41a;"></span>
+                <span>后端</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #fa8c16;"></span>
+                <span>服务层</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #eb2f96;"></span>
+                <span>AI服务</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #722ed1;"></span>
+                <span>数据库</span>
+            </div>
+        </div>
+
+        <div class="flow-container">
+            <!-- 步骤1 -->
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        用户点击"立即扫描"按钮
+                        <span class="step-type type-frontend">前端</span>
+                        <span class="status-badge badge-waiting">等待交互</span>
+                    </div>
+                    <div class="step-description">
+                        用户在仪表盘页面点击"立即扫描"按钮，触发前端扫描处理函数
+                    </div>
+                    <div class="code-block">
+                        <pre>// frontend/src/pages/Dashboard.tsx (Line 117-140)
+
+const handleScan = async () => {
+  setScanning(true);
+  try {
+    message.loading({ content: '正在扫描热点...', key: 'scan', duration: 0 });
+
+    const response = await api.post('/api/tasks/scan', {
+      sources: ['hackernews', 'bing', 'sogou'],
+      limit: 20,
+      includeWechat: false,
+      includeHotTrends: true
+    });
+
+    message.success({ content: `扫描完成！获取 ${response.data.saved || 0} 条新热点`, key: 'scan', duration: 3 });
+
+    // 重新加载热点数据
+    fetchHotspots();
+  } catch (error: any) {
+    console.error('扫描失败:', error);
+    message.error({ content: errorMsg, key: 'scan', duration: 3 });
+  } finally {
+    setScanning(false);
+  }
+};</pre>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">frontend/src/pages/Dashboard.tsx</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤2 -->
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        发送API请求到后端
+                        <span class="step-type type-frontend">前端</span>
+                        <span class="status-badge badge-processing">网络请求</span>
+                    </div>
+                    <div class="step-description">
+                        通过axios发送POST请求到后端API，携带扫描配置参数
+                    </div>
+                    <div class="api-endpoint">
+                        POST http://localhost:5001/api/tasks/scan
+                    </div>
+                    <div class="data-flow">
+                        <span>请求参数:</span>
+                        <span class="data-item">sources: hackernews, bing, sogou</span>
+                        <span class="data-item">limit: 20</span>
+                        <span class="data-item">includeHotTrends: true</span>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">frontend/src/utils/axios.ts → API配置</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤3 -->
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        后端路由处理
+                        <span class="step-type type-backend">后端</span>
+                        <span class="status-badge badge-processing">路由分发</span>
+                    </div>
+                    <div class="step-description">
+                        后端Express路由接收请求，分发给对应的控制器函数
+                    </div>
+                    <div class="code-block">
+                        <pre>// backend/src/routes/task.routes.js (Line 29-30)
+
+// 手动触发扫描（新的爬虫服务）
+router.post('/scan', triggerManualScan);</pre>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">backend/src/routes/task.routes.js</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤4 -->
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        控制器处理扫描请求
+                        <span class="step-type type-backend">后端</span>
+                        <span class="status-badge badge-processing">业务逻辑</span>
+                    </div>
+                    <div class="step-description">
+                        获取用户关键词，调用爬虫服务进行扫描，对结果进行AI分析并保存
+                    </div>
+                    <div class="code-block">
+                        <pre>// backend/src/controllers/task.controller.js (Line 94-199)
+
+exports.triggerManualScan = async (req, res) => {
+  // 1. 获取用户的活跃关键词
+  const keywords = await Keyword.find({ userId, isActive: true });
+
+  // 2. 调用爬虫服务
+  const crawlResult = await crawlAllSources(keywordNames, {
+    sources: sources || ['hackernews', 'google', 'bing', 'ddg', 'sogou'],
+    maxResultsPerSource: limit || 20
+  });
+
+  // 3. 保存到数据库（启用AI分析）
+  for (const hotspot of crawlResult.results) {
+    const aiAnalysis = await quickAnalyzeWithAI(hotspot.content, hotspot.source);
+
+    const newHotspot = new Hotspot({
+      userId: userId,
+      title: hotspot.title,
+      content: hotspot.content,
+      isVerified: aiAnalysis.isAuthentic,
+      confidence: aiAnalysis.confidence,
+      keywords: hotspot.keywords
+    });
+    await newHotspot.save();
+  }
+
+  // 4. 返回结果
+  res.json({ success: true, saved: savedHotspots.length });
+};</pre>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">backend/src/controllers/task.controller.js</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤5 -->
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        爬虫服务执行
+                        <span class="step-type type-service">服务层</span>
+                        <span class="status-badge badge-processing">并发爬取</span>
+                    </div>
+                    <div class="step-description">
+                        爬虫服务同时调用多个信息源进行数据抓取，支持9个不同的数据源
+                    </div>
+                    <div class="service-list">
+                        <div class="service-item">🔵 HackerNews</div>
+                        <div class="service-item">🟢 Google</div>
+                        <div class="service-item">🟡 Bing</div>
+                        <div class="service-item">🟣 DuckDuckGo</div>
+                        <div class="service-item">🟠 搜狗</div>
+                        <div class="service-item">🔴 微博</div>
+                        <div class="service-item">🟤 Twitter</div>
+                        <div class="service-item">⚪ B站</div>
+                    </div>
+                    <div class="code-block">
+                        <pre>// backend/src/services/crawler.service.js (Line 83-257)
+
+async function crawlAllSources(keywords = [], options = {}) {
+  const allResults = [];
+
+  // 并发爬取多个信息源
+  if (sources.includes('hackernews')) {
+    const hnResults = await hackernewsCrawler.crawlHackerNews(keywords, maxResultsPerSource);
+    allResults.push(...hnResults);
+  }
+
+  if (sources.includes('bing')) {
+    const bingResults = await bingCrawler.crawlBing(keywords, options);
+    allResults.push(...bingResults);
+  }
+
+  // ... 其他信息源
+
+  // URL去重
+  const uniqueResults = removeDuplicates(allResults);
+
+  return {
+    results: uniqueResults,
+    totalFetched: allResults.length,
+    totalUnique: uniqueResults.length
+  };
+}</pre>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">backend/src/services/crawler.service.js</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤6 -->
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        AI内容分析
+                        <span class="step-type type-ai">AI服务</span>
+                        <span class="status-badge badge-processing">智能分析</span>
+                    </div>
+                    <div class="step-description">
+                        对每条爬取的内容调用AI API进行真实性分析和置信度评分
+                    </div>
+                    <div class="code-block">
+                        <pre>// backend/src/services/ai.service.js (Line 115-237)
+
+exports.quickAnalyzeWithAI = async (content, source) => {
+  const provider = getAIProvider(); // GLM / DeepSeek / OpenRouter
+
+  const prompt = `请判断以下内容的真实性并评分（0-100分）。
+内容：${content.substring(0, 150)}
+来源：${source}
+
+要求：直接返回JSON格式
+{"isAuthentic":true,"confidence":75,"reason":"简短理由","summary":"内容摘要"}`;
+
+  const response = await axios.post(provider.apiUrl, {
+    model: provider.model,  // glm-4.7
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 300,
+    temperature: 0.1
+  }, { headers: provider.headers, timeout: 35000 });
+
+  return {
+    isAuthentic: result.isAuthentic,
+    confidence: result.confidence,
+    reasons: [result.reason],
+    summary: result.summary
+  };
+};</pre>
+                    </div>
+                    <div class="data-flow">
+                        <span>AI提供商:</span>
+                        <span class="data-item">GLM-4.7</span>
+                        <span class="data-item">DeepSeek</span>
+                        <span class="data-item">OpenRouter</span>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">backend/src/services/ai.service.js</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤7 -->
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        保存到MongoDB数据库
+                        <span class="step-type type-db">数据库</span>
+                        <span class="status-badge badge-processing">数据持久化</span>
+                    </div>
+                    <div class="step-description">
+                        将经过AI分析的热点数据保存到MongoDB的hotspots集合中
+                    </div>
+                    <div class="code-block">
+                        <pre>// 保存热点数据结构
+{
+  userId: ObjectId("..."),
+  title: "OpenAI发布GPT-5预览版",
+  content: "最新的大型语言模型性能提升显著...",
+  source: "HackerNews",
+  url: "https://news.ycombinator.com/item/123",
+  timestamp: ISODate("2026-04-11T09:06:19.563Z"),
+  isVerified: true,
+  confidence: 85,
+  keywords: ["Claude Code", "AI"],
+  analysis: {
+    summary: "OpenAI发布GPT-5预览版...",
+    reasons: ["来源可信", "内容完整"]
+  },
+  isNotified: false,
+  createdAt: ISODate("2026-04-11T09:06:19.755Z")
+}</pre>
+                    </div>
+                    <div class="data-flow">
+                        <span>数据库:</span>
+                        <span class="data-item">MongoDB</span>
+                        <span class="data-item">集合: hotspots</span>
+                        <span class="data-item">去重检查: 基于URL</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤8 -->
+            <div class="flow-step">
+                <div class="step-number">8</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        返回响应给前端
+                        <span class="step-type type-backend">后端</span>
+                        <span class="status-badge badge-success">响应完成</span>
+                    </div>
+                    <div class="step-description">
+                        扫描完成后，将结果统计信息返回给前端
+                    </div>
+                    <div class="response-summary">
+                        <h4>📊 API响应示例</h4>
+                        <div class="code-block">
+                            <pre>{
+  "success": true,
+  "message": "扫描完成",
+  "data": [...],           // 爬取的热点数组
+  "saved": 15,            // 成功保存的数量
+  "totalFetched": 45,     // 总抓取数量
+  "totalUnique": 38,      // 去重后数量
+  "keywords": ["Claude Code"],
+  "sources": ["hackernews", "bing", "sogou"],
+  "errors": [],
+  "aiEnabled": true,
+  "scanTime": "2026-04-11T09:06:25.358Z"
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤9 -->
+            <div class="flow-step">
+                <div class="step-number">9</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        前端更新UI显示
+                        <span class="step-type type-frontend">前端</span>
+                        <span class="status-badge badge-success">UI刷新</span>
+                    </div>
+                    <div class="step-description">
+                        前端接收响应，显示成功消息，并重新加载热点列表
+                    </div>
+                    <div class="code-block">
+                        <pre>// 显示成功消息
+message.success({ content: `扫描完成！获取 15 条新热点`, key: 'scan' });
+
+// 重新加载热点数据
+fetchHotspots();</pre>
+                    </div>
+                    <div class="data-flow">
+                        <span>UI更新:</span>
+                        <span class="data-item">显示成功提示</span>
+                        <span class="data-item">刷新热点列表</span>
+                        <span class="data-item">更新统计数据</span>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <span class="file-path">frontend/src/pages/Dashboard.tsx</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <!-- 步骤10 -->
+            <div class="flow-step">
+                <div class="step-number">10</div>
+                <div class="step-content">
+                    <div class="step-title">
+                        获取并显示最新热点
+                        <span class="step-type type-frontend">前端</span>
+                        <span class="status-badge badge-success">渲染完成</span>
+                    </div>
+                    <div class="step-description">
+                        调用热点列表API，将新获取的热点数据渲染到页面上
+                    </div>
+                    <div class="code-block">
+                        <pre>// frontend/src/pages/Dashboard.tsx (Line 79-109)
+
+const fetchHotspots = async () => {
+  const response = await api.get('/api/content/hotspots', {
+    params: { limit: 50, offset: 0 }
+  });
+
+  const hotspotsData = response.data?.data || [];
+
+  // 更新状态
+  setHotspots(hotspotsData);
+
+  // 计算统计数据
+  const todayHotspots = hotspotsData.filter(h =>
+    new Date(h.timestamp) >= today
+  ).length;
+  const verifiedContent = hotspotsData.filter(h => h.isVerified).length;
+
+  setStats(prev => ({
+    ...prev,
+    todayHotspots,
+    verifiedContent
+  }));
+};</pre>
+                    </div>
+                    <div class="api-endpoint">
+                        GET http://localhost:5001/api/content/hotspots?limit=50&offset=0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; color: white;">
+            <p style="font-size: 1.1rem; margin-bottom: 10px;">🎯 全链路完成</p>
+            <p>从用户点击到数据展示，整个流程包含：前端交互 → API调用 → 路由分发 → 业务处理 → 爬虫执行 → AI分析 → 数据存储 → 响应返回 → UI更新</p>
+        </div>
+    </div>
+</body>
+</html>

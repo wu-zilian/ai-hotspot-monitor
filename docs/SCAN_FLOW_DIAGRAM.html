@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI热点监控系统 - 立即扫描全链路</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .flow-phase {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .phase-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+
+        .phase-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .phase-subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-left: 10px;
+        }
+
+        .phase-content {
+            display: grid;
+            gap: 15px;
+        }
+
+        .flow-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .flow-item.http { border-left-color: #1890ff; }
+        .flow-item.backend { border-left-color: #52c41a; }
+        .flow-item.service { border-left-color: #fa8c16; }
+        .flow-item.ws { border-left-color: #eb2f96; }
+        .flow-item.ai { border-left-color: #722ed1; }
+        .flow-item.db { border-left-color: #13c2c2; }
+
+        .flow-item-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .flow-item-detail {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .flow-item-code {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        .flow-item-code .keyword { color: #569cd6; }
+        .flow-item-code .string { color: #ce9178; }
+        .flow-item-code .number { color: #b5cea8; }
+        .flow-item-code .comment { color: #6a9955; }
+
+        .arrow {
+            text-align: center;
+            font-size: 30px;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .timing {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .badge-async { background: #e6f7ff; color: #1890ff; }
+        .badge-sync { background: #fff1f0; color: #f5222d; }
+        .badge-bg { background: #f6ffed; color: #52c41a; }
+
+        .response-box {
+            background: #f0f5ff;
+            border: 1px solid #adc6ff;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-top: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .legend {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 24px; }
+            .phase-title { font-size: 18px; }
+            .flow-item { padding: 12px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 AI热点监控系统 - 立即扫描全链路</h1>
+            <p>从用户点击到实时通知的完整流程</p>
+        </div>
+
+        <div class="flow-container">
+            <!-- Phase 1: 用户交互 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">1</div>
+                    <div>
+                        <div class="phase-title">用户交互层 <span class="phase-subtitle">Frontend</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item">
+                        <div class="flow-item-title">
+                            🖱️ 用户点击"立即扫描"按钮
+                        </div>
+                        <div class="flow-item-detail">
+                            Dashboard.tsx (Line 117-140) <span class="timing">即时响应</span>
+                        </div>
+                        <div class="flow-item-code">
+<span class="keyword">const</span> handleScan = <span class="keyword">async</span> () => {
+  setScanning(<span class="keyword">true</span>);
+  <span class="comment">// 显示loading状态</span>
+  message.loading({ content: <span class="string">'正在扫描热点...'</span>, key: <span class="string">'scan'</span> });
+
+  <span class="comment">// 发起HTTP请求</span>
+  <span class="keyword">const</span> response = <span class="keyword">await</span> api.post(<span class="string">'/api/tasks/scan'</span>, {
+    sources: [<span class="string">'hackernews'</span>, <span class="string">'bing'</span>, <span class="string">'sogou'</span>],
+    limit: <span class="number">20</span>,
+    enableAI: <span class="keyword">true</span>
+  });
+};
+                        </div>
+                    </div>
+
+                    <div class="flow-item http">
+                        <div class="flow-item-title">
+                            📡 HTTP POST 请求
+                        </div>
+                        <div class="flow-item-detail">
+                            <span class="badge badge-async">异步</span>
+                            axios.post('/api/tasks/scan', {...})
+                        </div>
+                        <div class="response-box">
+Request Headers:<br>
+Authorization: Bearer &lt;token&gt;<br>
+Content-Type: application/json<br><br>
+Request Body:<br>
+{<br>
+&nbsp;&nbsp;sources: ['hackernews', 'bing', 'sogou'],<br>
+&nbsp;&nbsp;limit: 20,<br>
+&nbsp;&nbsp;enableAI: true<br>
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 2: 路由层 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">2</div>
+                    <div>
+                        <div class="phase-title">路由层 <span class="phase-subtitle">Router</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item backend">
+                        <div class="flow-item-title">
+                            🛣️ 路由匹配
+                        </div>
+                        <div class="flow-item-detail">
+                            task.routes.js (Line 25)
+                        </div>
+                        <div class="flow-item-code">
+router.post(<span class="string">'/scan'</span>, triggerManualScan);
+                        </div>
+                    </div>
+
+                    <div class="flow-item backend">
+                        <div class="flow-item-title">
+                            🔐 JWT认证中间件
+                        </div>
+                        <div class="flow-item-detail">
+                            验证token有效性，提取userId
+                        </div>
+                        <div class="response-box">
+✅ 认证成功: userId = &lt;user_id&gt;
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 3: 控制器层 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">3</div>
+                    <div>
+                        <div class="phase-title">控制器层 <span class="phase-subtitle">Controller</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item backend">
+                        <div class="flow-item-title">
+                            🎯 triggerManualScan 控制器
+                        </div>
+                        <div class="flow-item-detail">
+                            task.controller.js (Line 97-132) <span class="timing">&lt;1秒</span>
+                        </div>
+                        <div class="flow-item-code">
+<span class="keyword">exports</span>.triggerManualScan = <span class="keyword">async</span> (req, res) => {
+  <span class="keyword">const</span> userId = req.user?.userId;
+  <span class="keyword">const</span> { sources, limit, enableAI } = req.body;
+
+  <span class="comment">// 🚀 启动异步扫描任务（立即返回）</span>
+  <span class="keyword">const</span> taskId = <span class="keyword">await</span> asyncScanService.startScan(userId, {
+    sources: sources || [<span class="string">'hackernews'</span>, <span class="string">'google'</span>],
+    limit: limit || <span class="number">20</span>,
+    enableAI: enableAI !== <span class="keyword">false</span>
+  });
+
+  <span class="comment">// ⚡ 立即返回，不等待扫描完成</span>
+  res.json({
+    success: <span class="keyword">true</span>,
+    taskId: taskId,
+    status: <span class="string">'started'</span>,
+    websocketUrl: <span class="string">`/ws?userId=${userId}`</span>
+  });
+};
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 4: 异步扫描服务 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">4</div>
+                    <div>
+                        <div class="phase-title">异步扫描服务 <span class="phase-subtitle">Service</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item service">
+                        <div class="flow-item-title">
+                            📋 创建扫描任务记录
+                        </div>
+                        <div class="flow-item-detail">
+                            asyncScan.service.js (Line 19-92)
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 生成唯一任务ID</span>
+<span class="keyword">const</span> taskId = uuidv4();
+
+<span class="comment">// 创建ScanTask文档</span>
+<span class="keyword">const</span> scanTask = <span class="keyword">new</span> ScanTask({
+  taskId,
+  userId,
+  status: <span class="string">'pending'</span>,
+  keywords: keywordNames,
+  progress: { crawled: <span class="number">0</span>, saved: <span class="number">0</span>, analyzed: <span class="number">0</span> }
+});
+
+<span class="keyword">await</span> scanTask.save();
+                        </div>
+                    </div>
+
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            🔔 发送任务启动通知 (WebSocket)
+                        </div>
+                        <div class="flow-item-detail">
+                            websocket.service.js (Line 120-127)
+                        </div>
+                        <div class="response-box">
+WebSocket Message → Client:<br>
+{<br>
+&nbsp;&nbsp;type: 'scanProgress',<br>
+&nbsp;&nbsp;taskId: 'xxx',<br>
+&nbsp;&nbsp;status: 'started',<br>
+&nbsp;&nbsp;message: '扫描任务已启动'<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item service">
+                        <div class="flow-item-title">
+                            ⚙️ 异步执行扫描 (后台)
+                        </div>
+                        <div class="flow-item-detail">
+                            <span class="badge badge-bg">后台任务</span>
+                            executeScan() 在后台执行
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 🔄 异步执行，不阻塞响应</span>
+<span class="keyword">this</span>.executeScan(taskId, userId, keywords, options)
+  .catch(error => sendScanError(taskId, userId, error));
+
+<span class="comment">// ⚡ 立即返回taskId给前端</span>
+<span class="keyword">return</span> taskId;
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 5: 爬虫执行 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">5</div>
+                    <div>
+                        <div class="phase-title">爬虫执行 <span class="phase-subtitle">Crawler</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item service">
+                        <div class="flow-item-title">
+                            🕷️ 爬取热点数据
+                        </div>
+                        <div class="flow-item-detail">
+                            crawler.service.js <span class="timing">5-15秒</span>
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 调用爬虫服务</span>
+<span class="keyword">const</span> crawlResult = <span class="keyword">await</span> crawlAllSources(keywords, {
+  sources: [<span class="string">'hackernews'</span>, <span class="string">'google'</span>, <span class="string">'bing'</span>],
+  limit: <span class="number">20</span>
+});
+
+<span class="comment">// 结果示例：</span>
+{<br>
+&nbsp;&nbsp;totalFetched: <span class="number">45</span>,<br>
+&nbsp;&nbsp;totalUnique: <span class="number">38</span>,<br>
+&nbsp;&nbsp;results: [{ title, content, url, source, ... }]<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            📊 发送爬取进度通知
+                        </div>
+                        <div class="response-box">
+{<br>
+&nbsp;&nbsp;type: 'scanProgress',<br>
+&nbsp;&nbsp;status: 'crawling',<br>
+&nbsp;&nbsp;message: '正在爬取热点数据...'<br>
+}<br><br>
+{<br>
+&nbsp;&nbsp;type: 'scanProgress',<br>
+&nbsp;&nbsp;status: 'crawled',<br>
+&nbsp;&nbsp;message: '爬取完成，共获取45条数据'<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item db">
+                        <div class="flow-item-title">
+                            💾 保存热点数据 (MongoDB)
+                        </div>
+                        <div class="flow-item-detail">
+                            去重并保存到数据库
+                        </div>
+                        <div class="flow-item-code">
+<span class="keyword">const</span> { savedHotspots, skippedUrls } =
+  <span class="keyword">await</span> saveUniqueHotspots(userId, crawlResult.results);
+
+<span class="comment">// 保存示例：</span>
+{<br>
+&nbsp;&nbsp;savedHotspots: <span class="number">32</span>,<br>
+&nbsp;&nbsp;skippedUrls: <span class="number">6</span> <span class="comment">// (去重)</span><br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            ✅ 发送保存完成通知
+                        </div>
+                        <div class="response-box">
+{<br>
+&nbsp;&nbsp;type: 'scanProgress',<br>
+&nbsp;&nbsp;status: 'saved',<br>
+&nbsp;&nbsp;message: '数据已保存: 32条新热点'<br>
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 6: AI分析 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">6</div>
+                    <div>
+                        <div class="phase-title">AI分析 <span class="phase-subtitle">Background Process</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item ai">
+                        <div class="flow-item-title">
+                            🤖 启动后台AI分析
+                        </div>
+                        <div class="flow-item-detail">
+                            <span class="badge badge-bg">后台</span>
+                            setTimeout 确保100ms后执行
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 在后台执行AI分析</span>
+setTimeout(() => {
+  processAIAnalysis(taskId, userId, hotspotIds)
+    .catch(error => sendScanError(taskId, userId, error));
+}, <span class="number">100</span>);
+                        </div>
+                    </div>
+
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            📨 发送分析开始通知
+                        </div>
+                        <div class="response-box">
+{<br>
+&nbsp;&nbsp;type: 'scanProgress',<br>
+&nbsp;&nbsp;status: 'analyzing',<br>
+&nbsp;&nbsp;message: '开始AI分析...'<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item ai">
+                        <div class="flow-item-title">
+                            🧠 逐个AI分析热点
+                        </div>
+                        <div class="flow-item-detail">
+                            ai.service.js (Line 48-175) <span class="timing">10-30秒/条</span>
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 遍历每个热点</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> hotspotId <span class="keyword">of</span> hotspotIds) {
+  <span class="comment">// 调用AI API分析</span>
+  <span class="keyword">const</span> analysisResult = <span class="keyword">await</span> analyzeWithAI(
+    hotspot.content,
+    hotspot.source
+  );
+
+  <span class="comment">// 更新数据库</span>
+  hotspot.isVerified = analysisResult.isAuthentic;
+  hotspot.confidence = analysisResult.confidence;
+  hotspot.verification = analysisResult.verification;
+  hotspot.analysis = analysisResult.analysis;
+  <span class="keyword">await</span> hotspot.save();
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item ai">
+                        <div class="flow-item-title">
+                            📤 AI返回验证结果
+                        </div>
+                        <div class="response-box">
+AI API Response:<br>
+{<br>
+&nbsp;&nbsp;verification: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;status: 'verified' | 'unverified' | 'suspicious',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;isAuthentic: true/false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;confidence: 0-100,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;level: 'high' | 'medium' | 'low'<br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;analysis: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;summary: '内容摘要',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;reasons: ['理由1', '理由2'],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;indicators: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hasSource: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hasAuthor: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hasDate: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;isOfficial: false<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            🔔 实时推送分析结果 (每完成一条)
+                        </div>
+                        <div class="flow-item-detail">
+                            websocket.service.js (Line 132-139)
+                        </div>
+                        <div class="response-box">
+WebSocket Message → Client (每条):<br>
+{<br>
+&nbsp;&nbsp;type: 'analysisResult',<br>
+&nbsp;&nbsp;taskId: 'xxx',<br>
+&nbsp;&nbsp;hotspot: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;id: 'hotspot_id',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;title: '热点标题',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;source: 'HackerNews'<br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;verification: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;status: 'verified',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;isAuthentic: true,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;confidence: 92,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;level: 'high'<br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;progress: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;current: 1,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;total: 32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;percentage: 3<br>
+&nbsp;&nbsp;}<br>
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 7: 完成 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">7</div>
+                    <div>
+                        <div class="phase-title">扫描完成 <span class="phase-subtitle">Completion</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item ws">
+                        <div class="flow-item-title">
+                            🎉 发送扫描完成通知
+                        </div>
+                        <div class="flow-item-detail">
+                            websocket.service.js (Line 144-151)
+                        </div>
+                        <div class="response-box">
+{<br>
+&nbsp;&nbsp;type: 'scanComplete',<br>
+&nbsp;&nbsp;taskId: 'xxx',<br>
+&nbsp;&nbsp;summary: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;total: 32,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;success: 30,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;failed: 2,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;duration: 450000 <span class="comment">// (毫秒)</span><br>
+&nbsp;&nbsp;}<br>
+}
+                        </div>
+                    </div>
+
+                    <div class="flow-item db">
+                        <div class="flow-item-title">
+                            📊 更新任务状态
+                        </div>
+                        <div class="flow-item-detail">
+                            ScanTask.status = 'completed'
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">⬇️</div>
+
+            <!-- Phase 8: 前端更新 -->
+            <div class="flow-phase">
+                <div class="phase-header">
+                    <div class="phase-number">8</div>
+                    <div>
+                        <div class="phase-title">前端实时更新 <span class="phase-subtitle">Frontend WebSocket</span></div>
+                    </div>
+                </div>
+                <div class="phase-content">
+                    <div class="flow-item">
+                        <div class="flow-item-title">
+                            🔌 WebSocket客户端接收消息
+                        </div>
+                        <div class="flow-item-detail">
+                            websocketClient.ts
+                        </div>
+                        <div class="flow-item-code">
+<span class="comment">// 监听WebSocket消息</span>
+ws.on(<span class="string">'message'</span>, (data) => {
+  <span class="keyword">const</span> message = JSON.parse(data);
+
+  <span class="keyword">switch</span> (message.type) {
+    <span class="keyword">case</span> <span class="string">'scanProgress'</span>:
+      <span class="comment">// 更新进度条</span>
+      updateProgress(message);
+      <span class="keyword">break</span>;
+
+    <span class="keyword">case</span> <span class="string">'analysisResult'</span>:
+      <span class="comment">// 添加到实时结果列表</span>
+      addResult(message);
+      <span class="keyword">break</span>;
+
+    <span class="keyword">case</span> <span class="string">'scanComplete'</span>:
+      <span class="comment">// 显示完成通知</span>
+      showComplete(message.summary);
+      <span class="keyword">break</span>;
+  }
+});
+                        </div>
+                    </div>
+
+                    <div class="flow-item">
+                        <div class="flow-item-title">
+                            🎨 UI实时更新
+                        </div>
+                        <div class="flow-item-detail">
+                            Dashboard组件自动刷新
+                        </div>
+                        <div class="response-box">
+✅ 进度条实时更新<br>
+✅ 结果列表逐条添加<br>
+✅ 置信度标签显示<br>
+✅ 完成统计展示
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #1890ff;"></div>
+                <span>HTTP 请求</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #52c41a;"></div>
+                <span>后端处理</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fa8c16;"></div>
+                <span>业务服务</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #eb2f96;"></div>
+                <span>WebSocket 通信</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #722ed1;"></div>
+                <span>AI 分析</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #13c2c2;"></div>
+                <span>数据库操作</span>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="background: white; border-radius: 16px; padding: 25px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h2 style="color: #333; margin-bottom: 15px;">📋 流程总结</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; font-size: 14px; color: #666;">
+                <div style="background: #f0f5ff; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1890ff;">⚡ 响应时间</strong><br>
+                    HTTP请求立即返回 (&lt;1秒)
+                </div>
+                <div style="background: #f6ffed; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #52c41a;">🔄 异步处理</strong><br>
+                    爬取+AI分析在后台执行
+                </div>
+                <div style="background: #fff7e6; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #fa8c16;">📡 实时通知</strong><br>
+                    WebSocket推送每条分析结果
+                </div>
+                <div style="background: #f9f0ff; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #722ed1;">🤖 AI验证</strong><br>
+                    返回confidence (0-100)
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 30px; color: white; opacity: 0.8;">
+            <p>🔥 AI热点监控系统 ©2024 | 异步扫描架构</p>
+        </div>
+    </div>
+</body>
+</html>

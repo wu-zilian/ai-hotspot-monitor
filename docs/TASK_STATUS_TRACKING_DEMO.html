@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫描任务状态跟踪功能演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .before-title::before {
+            content: '❌';
+        }
+
+        .after-title::before {
+            content: '✅';
+        }
+
+        .demo-screen {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .demo-header h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .status-card {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .status-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .status-icon {
+            font-size: 18px;
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .status-detail {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .view-button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .list-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .list-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .status-tag {
+            background: #e6f7ff;
+            color: #1890ff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-tag:hover {
+            background: #1890ff;
+            color: white;
+        }
+
+        .scan-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #1890ff;
+            margin: 10px 0;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .feature-list li:before {
+            content: '✓ ';
+            color: #52c41a;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .highlight-box {
+            background: #f6ffed;
+            border-left: 4px solid #52c41a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .highlight-box h4 {
+            color: #52c41a;
+            margin-bottom: 8px;
+        }
+
+        .highlight-box p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .flow-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 扫描任务状态跟踪功能</h1>
+            <p>点击"后台运行"后，随时查看扫描进度</p>
+        </div>
+
+        <div class="flow-container">
+            <!-- 优化前 -->
+            <div class="panel">
+                <div class="panel-title before-title">优化前 - 任务丢失</div>
+
+                <div class="demo-screen">
+                    <div class="demo-header">
+                        <h3>🔥 AI热点监控</h3>
+                    </div>
+
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+                        <div style="color: #999; margin-bottom: 8px;">点击"立即扫描"</div>
+                        <div style="color: #999;">→ 弹出进度Modal</div>
+                        <div style="color: #999;">→ 点击"后台运行"</div>
+                        <div style="color: #ff4d4f; font-weight: bold; margin-top: 16px;">
+                            ❌ 进度Modal关闭<br>
+                            ❌ 无法查看进度<br>
+                            ❌ 不知道任务是否还在运行
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="feature-list">
+                    <li style="color: #ff4d4f;">❌ 点击后台运行后无法查看进度</li>
+                    <li style="color: #ff4d4f;">❌ 不知道任务是否还在运行</li>
+                    <li style="color: #ff4d4f;">❌ 刷新页面后丢失任务状态</li>
+                    <li style="color: #ff4d4f;">❌ 无法重新打开进度窗口</li>
+                </ul>
+            </div>
+
+            <!-- 优化后 -->
+            <div class="panel">
+                <div class="panel-title after-title">优化后 - 随时查看</div>
+
+                <div class="demo-screen">
+                    <div class="demo-header">
+                        <h3>🔥 AI热点监控</h3>
+                    </div>
+
+                    <!-- 状态卡片 -->
+                    <div class="status-card">
+                        <div class="status-card-header">
+                            <span class="status-icon">🔄</span>
+                            <div class="status-info">
+                                <div class="status-title">扫描任务进行中</div>
+                                <div class="status-detail">
+                                    状态: AI分析中... &nbsp;&nbsp; 进度: 45%
+                                </div>
+                            </div>
+                            <button class="view-button">查看进度</button>
+                        </div>
+                    </div>
+
+                    <!-- 列表卡片 -->
+                    <div class="list-card">
+                        <div class="list-header">
+                            <span class="list-title">最新热点</span>
+                            <span class="status-tag">
+                                🔄 后台扫描中 (点击查看)
+                            </span>
+                        </div>
+                        <div style="color: #999; font-size: 14px; text-align: center; padding: 20px;">
+                            暂无新热点数据...
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="feature-list">
+                    <li style="color: #52c41a;">✅ 点击"后台运行"后显示状态卡片</li>
+                    <li style="color: #52c41a;">✅ 点击"查看进度"重新打开Modal</li>
+                    <li style="color: #52c41a;">✅ 列表标题显示任务状态</li>
+                    <li style="color: #52c41a;">✅ 每3秒自动更新进度信息</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <h4>🎯 核心改进</h4>
+                    <p>
+                        用户可以随时点击状态卡片或列表标题，
+                        重新打开实时进度窗口，不再丢失任务状态！
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用流程 -->
+        <div class="panel">
+            <div class="panel-title" style="justify-content: center;">
+                📋 完整使用流程
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 8px;">1️⃣</div>
+                    <div style="font-weight: bold; margin-bottom: 4px;">启动扫描</div>
+                    <div style="font-size: 13px; color: #666;">点击"立即扫描"按钮</div>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 8px;">2️⃣</div>
+                    <div style="font-weight: bold; margin-bottom: 4px;">查看进度</div>
+                    <div style="font-size: 13px; color: #666;">进度Modal自动打开</div>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 8px;">3️⃣</div>
+                    <div style="font-weight: bold; margin-bottom: 4px;">后台运行</div>
+                    <div style="font-size: 13px; color: #666;">点击"后台运行"按钮</div>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 8px;">4️⃣</div>
+                    <div style="font-weight: bold; margin-bottom: 4px;">随时查看 ⭐</div>
+                    <div style="font-size: 13px; color: #666;">点击状态卡片重新打开</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态卡片位置说明 -->
+        <div class="panel">
+            <div class="panel-title">📍 状态卡片位置说明</div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; gap: 20px;">
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 12px;">位置1: Dashboard顶部</div>
+                    <div class="status-card">
+                        <div class="status-card-header">
+                            <span class="status-icon">🔄</span>
+                            <div class="status-info">
+                                <div class="status-title">扫描任务进行中</div>
+                                <div class="status-detail">
+                                    状态: AI分析中... &nbsp;&nbsp; 进度: 45%
+                                </div>
+                            </div>
+                            <button class="view-button">查看进度</button>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: #999; margin-top: 8px;">
+                        点击"后台运行"后自动显示在Dashboard顶部
+                    </p>
+                </div>
+
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 12px;">位置2: 列表标题标签</div>
+                    <div class="list-card">
+                        <div class="list-header">
+                            <span class="list-title">最新热点</span>
+                            <span class="status-tag">
+                                🔄 后台扫描中 (点击查看)
+                            </span>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: #999; margin-top: 8px;">
+                        在"最新热点"卡片标题处显示
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 交互演示 -->
+        <div class="panel">
+            <div class="panel-title">🎬 交互演示</div>
+
+            <div style="background: #f5f5f5; border-radius: 12px; padding: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <span style="font-weight: bold;">步骤1: 点击"后台运行"</span>
+                    <span style="color: #999;">→</span>
+                </div>
+
+                <div class="demo-screen" style="margin-bottom: 16px;">
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                        <div style="color: #666; margin-bottom: 8px;">扫描进度Modal</div>
+                        <button class="scan-button" style="background: #fff; color: #666; border: 1px solid #d9d9d9;">
+                            后台运行
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <span style="font-weight: bold;">步骤2: 状态卡片出现</span>
+                    <span style="color: #999;">→</span>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-card-header">
+                        <span class="status-icon">🔄</span>
+                        <div class="status-info">
+                            <div class="status-title">扫描任务进行中</div>
+                            <div class="status-detail">
+                                状态: AI分析中... &nbsp;&nbsp; 进度: 45%
+                            </div>
+                        </div>
+                        <button class="view-button">查看进度</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; margin-top: 20px;">
+                    <span style="font-weight: bold;">步骤3: 点击"查看进度"</span>
+                    <span style="color: #999;">→</span>
+                </div>
+
+                <div class="demo-screen">
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                        <div style="color: #52c41a; font-weight: bold; margin-bottom: 8px;">
+                            进度Modal重新打开！
+                        </div>
+                        <div style="color: #666;">
+                            看到实时进度、AI分析结果...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特点 -->
+        <div class="panel">
+            <div class="panel-title">✨ 功能特点</div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="background: #f0f5ff; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #1890ff;">
+                        📍 双入口访问
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        既可以点击顶部状态卡片，也可以点击列表标题的标签，两个地方都能重新打开进度Modal
+                    </div>
+                </div>
+
+                <div style="background: #f6ffed; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #52c41a;">
+                        🔄 自动轮询
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        每3秒自动检查任务状态，更新进度信息，无需手动刷新
+                    </div>
+                </div>
+
+                <div style="background: #fff7e6; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #fa8c16;">
+                        💾 状态持久
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        状态卡片在页面上持续显示，直到任务完成或手动关闭
+                    </div>
+                </div>
+
+                <div style="background: #f9f0ff; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #722ed1;">
+                        🎯 智能隐藏
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        任务完成后自动隐藏状态卡片，不影响正常使用
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div style="text-align: center; margin-top: 40px; color: #999; font-size: 14px;">
+            <p>🔥 AI热点监控系统 - 扫描任务状态跟踪功能演示</p>
+        </div>
+    </div>
+</body>
+</html>

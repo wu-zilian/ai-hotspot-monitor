@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(docker exec:*)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)",
+      "Bash(findstr \":5001\")",
+      "Bash(npm start:*)",
+      "Bash(npm run:*)",
+      "Bash(taskkill:*)",
+      "Bash(PORT=5002 node:*)",
+      "Bash(__NEW_LINE_da817dde224c4ee9__ echo:*)",
+      "Bash(__NEW_LINE_8445210124bd0228__ echo:*)",
+      "Bash(pkill:*)",
+      "Bash(__NEW_LINE_f06d0c142503dc99__ echo:*)",
+      "Bash(tasklist:*)",
+      "Bash(npm list:*)"
+    ]
+  }
+}
