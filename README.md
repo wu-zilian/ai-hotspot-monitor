@@ -115,7 +115,7 @@ ai-hotspot-monitor/
 
 #### 1. 克隆项目
 ```bash
-git clone https://github.com/your-repo/ai-hotspot-monitor.git
+git clone https://github.com/wu-zilian/ai-hotspot-monitor.git
 cd ai-hotspot-monitor
 ```
 
@@ -343,9 +343,9 @@ MIT License
 
 ## 联系方式
 
-- 项目地址: https://github.com/your-repo/ai-hotspot-monitor
-- 问题反馈: https://github.com/your-repo/ai-hotspot-monitor/issues
-- 文档地址: https://your-repo.github.io/ai-hotspot-monitor/
+- 项目地址: https://github.com/wu-zilian/ai-hotspot-monitor
+- 问题反馈: https://github.com/wu-zilian/ai-hotspot-monitor/issues
+- 文档地址: https://wu-zilian.github.io/ai-hotspot-monitor/
 
 ---
 
